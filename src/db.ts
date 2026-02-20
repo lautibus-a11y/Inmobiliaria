@@ -4,12 +4,15 @@ const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:afX6
 
 const pool = new pg.Pool({
   connectionString,
-  max: 20,
+  max: 10, // Reduced for serverless environments to avoid connection exhaustion
   idleTimeoutMillis: 30000,
-  connectionTimeoutMillis: 2000,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  connectionTimeoutMillis: 5000,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : (connectionString.includes('supabase.co') ? { rejectUnauthorized: false } : false)
+});
+
+// Error handling to prevent crashes in serverless functions
+pool.on('error', (err) => {
+  console.error('Unexpected error on idle client', err);
 });
 
 export default pool;

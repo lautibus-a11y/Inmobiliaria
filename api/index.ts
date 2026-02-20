@@ -4,9 +4,26 @@ import pool from "../src/db";
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
+// Health check endpoint for debugging
+app.get("/api/health", async (req, res) => {
+    try {
+        await pool.query('SELECT 1');
+        res.json({ status: "ok", database: "connected", timestamp: new Date() });
+    } catch (err) {
+        console.error("Health check failed:", err);
+        res.status(500).json({ status: "error", database: "disconnected", error: String(err) });
+    }
+});
+
 const apiRouter = Router();
 
-// API Routes
+// Middleware for CORS-like behavior (optional, but good for Vercel)
+apiRouter.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    next();
+});
 apiRouter.get("/properties", async (req, res) => {
     const { type, operation, minPrice, maxPrice } = req.query;
     let query = "SELECT * FROM properties WHERE 1=1";
