@@ -103,7 +103,7 @@ export function Home() {
                         transition={{ duration: 1, delay: 0.5 }}
                         className="text-5xl md:text-8xl font-extrabold text-white tracking-tighter drop-shadow-2xl"
                     >
-                        InmoElite <span className="text-blue-500">Lujo</span>
+                        Inmobiliaria <span className="text-blue-500">Telares</span>
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0 }}

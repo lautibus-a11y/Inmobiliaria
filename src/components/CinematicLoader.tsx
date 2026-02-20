@@ -1,5 +1,5 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { Home } from 'lucide-react';
 
 export function CinematicLoader() {
     return (
@@ -40,9 +40,9 @@ export function CinematicLoader() {
                     <div className="size-20 md:size-24 bg-gradient-to-tr from-blue-600 to-indigo-400 rounded-2xl rotate-12 shadow-[0_0_40px_rgba(37,99,235,0.4)] flex items-center justify-center overflow-hidden">
                         <motion.div
                             animate={{ rotate: -12 }}
-                            className="text-white font-black text-4xl"
+                            className="text-white"
                         >
-                            IE
+                            <Home className="size-10 md:size-12" strokeWidth={2.5} />
                         </motion.div>
                         {/* Subtle shine effect */}
                         <motion.div
@@ -61,7 +61,7 @@ export function CinematicLoader() {
                         transition={{ duration: 1, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
                         className="text-white text-3xl md:text-5xl font-bold tracking-[0.2em] uppercase"
                     >
-                        Inmo<span className="text-blue-500">Elite</span>
+                        Inmo<span className="text-blue-500">Telares</span>
                     </motion.h2>
                 </div>
 
@@ -71,7 +71,7 @@ export function CinematicLoader() {
                     transition={{ delay: 1.2, duration: 1 }}
                     className="mt-4 text-white/60 text-xs font-bold uppercase tracking-[0.5em] ml-2"
                 >
-                    Inmobiliaria de Lujo
+                    Inmobiliaria Telares
                 </motion.div>
 
                 {/* Progress Bar Bloom */}
