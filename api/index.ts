@@ -1,11 +1,13 @@
-import express from "express";
+import express, { Router } from "express";
 import pool from "../src/db";
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
 
+const apiRouter = Router();
+
 // API Routes
-app.get("/api/properties", async (req, res) => {
+apiRouter.get("/properties", async (req, res) => {
     const { type, operation, minPrice, maxPrice } = req.query;
     let query = "SELECT * FROM properties WHERE 1=1";
     const params: any[] = [];
@@ -38,7 +40,7 @@ app.get("/api/properties", async (req, res) => {
     }
 });
 
-app.get("/api/properties/:id", async (req, res) => {
+apiRouter.get("/properties/:id", async (req, res) => {
     try {
         const propertyRes = await pool.query("SELECT * FROM properties WHERE id = $1", [req.params.id]);
         if (propertyRes.rows.length === 0) return res.status(404).json({ error: "Property not found" });
@@ -51,7 +53,7 @@ app.get("/api/properties/:id", async (req, res) => {
     }
 });
 
-app.post("/api/properties", async (req, res) => {
+apiRouter.post("/properties", async (req, res) => {
     const { title, description, price, location, type, operation, bedrooms, bathrooms, area, featured, main_image, images } = req.body;
     const client = await pool.connect();
     try {
@@ -82,7 +84,7 @@ app.post("/api/properties", async (req, res) => {
     }
 });
 
-app.put("/api/properties/:id", async (req, res) => {
+apiRouter.put("/properties/:id", async (req, res) => {
     const { title, description, price, location, type, operation, bedrooms, bathrooms, area, featured, status, main_image, images } = req.body;
     const client = await pool.connect();
     try {
@@ -115,7 +117,7 @@ app.put("/api/properties/:id", async (req, res) => {
     }
 });
 
-app.delete("/api/properties/:id", async (req, res) => {
+apiRouter.delete("/properties/:id", async (req, res) => {
     try {
         await pool.query("DELETE FROM properties WHERE id = $1", [req.params.id]);
         res.json({ success: true });
@@ -125,7 +127,7 @@ app.delete("/api/properties/:id", async (req, res) => {
     }
 });
 
-app.get("/api/stats", async (req, res) => {
+apiRouter.get("/stats", async (req, res) => {
     try {
         const total = await pool.query("SELECT COUNT(*) as count FROM properties");
         const active = await pool.query("SELECT COUNT(*) as count FROM properties WHERE status = 'disponible'");
@@ -143,7 +145,7 @@ app.get("/api/stats", async (req, res) => {
     }
 });
 
-app.get("/api/favorites", async (req, res) => {
+apiRouter.get("/favorites", async (req, res) => {
     try {
         const result = await pool.query(`
       SELECT p.* FROM properties p
@@ -156,7 +158,7 @@ app.get("/api/favorites", async (req, res) => {
     }
 });
 
-app.post("/api/favorites/:id", async (req, res) => {
+apiRouter.post("/favorites/:id", async (req, res) => {
     try {
         await pool.query("INSERT INTO favorites (property_id) VALUES ($1) ON CONFLICT DO NOTHING", [req.params.id]);
         res.json({ success: true });
@@ -166,7 +168,7 @@ app.post("/api/favorites/:id", async (req, res) => {
     }
 });
 
-app.delete("/api/favorites/:id", async (req, res) => {
+apiRouter.delete("/favorites/:id", async (req, res) => {
     try {
         await pool.query("DELETE FROM favorites WHERE property_id = $1", [req.params.id]);
         res.json({ success: true });
@@ -176,7 +178,7 @@ app.delete("/api/favorites/:id", async (req, res) => {
     }
 });
 
-app.get("/api/inquiries", async (req, res) => {
+apiRouter.get("/inquiries", async (req, res) => {
     try {
         const result = await pool.query(`
       SELECT i.*, p.title as property_title, p.main_image as property_image
@@ -191,7 +193,7 @@ app.get("/api/inquiries", async (req, res) => {
     }
 });
 
-app.post("/api/inquiries", async (req, res) => {
+apiRouter.post("/inquiries", async (req, res) => {
     const { property_id, client_name, client_phone, message } = req.body;
     try {
         await pool.query(`
@@ -204,5 +206,7 @@ app.post("/api/inquiries", async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 });
+
+app.use("/api", apiRouter);
 
 export default app;
