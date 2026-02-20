@@ -1,0 +1,5 @@
+{
+  "name": "InmoElite - Inmobiliaria Moderna",
+  "description": "Plataforma inmobiliaria premium con catálogo interactivo, panel de administración y contacto directo por WhatsApp.",
+  "requestFramePermissions": ["geolocation"]
+}
