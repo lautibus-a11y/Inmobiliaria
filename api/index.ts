@@ -23,11 +23,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).end();
     }
 
-    // Strip /api prefix to get the route
-    const url = req.url?.replace(/^\/api/, '') || '/';
+    // Normalize URL: strip /api prefix if present, handle both cases
+    const rawUrl = req.url || '/';
+    const url = rawUrl.replace(/^\/api/, '').split('?')[0] || '/';
     const method = req.method?.toUpperCase() || 'GET';
 
-    console.log(`[API] ${method} ${url}`);
+    console.log(`[API] ${method} ${rawUrl} → route: ${url}`);
 
     // Route: GET /health
     if (url === '/health' && method === 'GET') {
