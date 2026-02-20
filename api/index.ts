@@ -23,12 +23,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).end();
     }
 
-    // Normalize URL: strip /api prefix if present, handle both cases
+    // Normalize URL: strip /api prefix if present
     const rawUrl = req.url || '/';
-    const url = rawUrl.replace(/^\/api/, '').split('?')[0] || '/';
+    const [pathPart, searchPart] = rawUrl.replace(/^\/api/, '').split('?');
+    const url = pathPart || '/';
     const method = req.method?.toUpperCase() || 'GET';
 
-    console.log(`[API] ${method} ${rawUrl} → route: ${url}`);
+    // Parse query params manually if Vercel doesn't populate req.query as expected
+    const queryParams: any = { ...req.query };
+    if (searchPart) {
+        const searchParams = new URLSearchParams(searchPart);
+        searchParams.forEach((value, key) => {
+            queryParams[key] = value;
+        });
+    }
+
+    console.log(`[API] ${method} ${rawUrl} → route: ${url}`, queryParams);
 
     // Route: GET /health
     if (url === '/health' && method === 'GET') {
@@ -43,14 +53,21 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Route: GET /properties
     if (url === '/properties' && method === 'GET') {
-        let query = supabase.from('properties').select('*');
-        const { type, operation, minPrice, maxPrice } = req.query;
-        if (type) query = query.eq('type', type as string);
-        if (operation) query = query.eq('operation', operation as string);
-        if (minPrice) query = query.gte('price', Number(minPrice));
-        if (maxPrice) query = query.lte('price', Number(maxPrice));
-        query = query.order('featured', { ascending: false }).order('created_at', { ascending: false });
-        const { data, error } = await query;
+        let supabaseQuery = supabase.from('properties').select('*');
+        const { type, operation, minPrice, maxPrice } = queryParams;
+
+        if (type && type !== 'todos') {
+            supabaseQuery = supabaseQuery.ilike('type', type);
+        }
+        if (operation) {
+            supabaseQuery = supabaseQuery.ilike('operation', operation);
+        }
+        if (minPrice) supabaseQuery = supabaseQuery.gte('price', Number(minPrice));
+        if (maxPrice) supabaseQuery = supabaseQuery.lte('price', Number(maxPrice));
+
+        supabaseQuery = supabaseQuery.order('featured', { ascending: false }).order('created_at', { ascending: false });
+
+        const { data, error } = await supabaseQuery;
         if (error) return res.status(500).json({ error: error.message });
         return res.status(200).json(data);
     }
