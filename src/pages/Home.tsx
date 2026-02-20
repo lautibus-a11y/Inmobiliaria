@@ -28,10 +28,16 @@ export function Home() {
         try {
             const typeParam = activeType !== 'todos' ? `&type=${activeType}` : '';
             const response = await fetch(`/api/properties?operation=${operation}${typeParam}`);
+            if (!response.ok) {
+                console.error("API error:", response.status, response.statusText);
+                setProperties([]);
+                return;
+            }
             const data = await response.json();
-            setProperties(data);
+            setProperties(Array.isArray(data) ? data : []);
         } catch (error) {
             console.error("Error fetching properties:", error);
+            setProperties([]);
         } finally {
             setLoading(false);
         }

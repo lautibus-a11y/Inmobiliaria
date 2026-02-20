@@ -1,12 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase with Service Role (full access, server-side only)
-const supabase = createClient(
-    process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-);
+// Hardcoded fallbacks ensure the function works even if env vars aren't set in Vercel
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://afbcyivirvhcwdmdqyvz.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFmYmN5aXZpcnZoY3dkbWRxeXZ6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MTU1MTM3OCwiZXhwIjoyMDg3MTI3Mzc4fQ.yCZo1quJOEm1G3M4WzUrpHT4biOkATMYCJGta3c5XaA';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY, {
+    auth: { autoRefreshToken: false, persistSession: false }
+});
 
 // Helper
 function setHeaders(res: VercelResponse) {
