@@ -21,27 +21,30 @@ export function PropertyDetailOverlay({ id, onClose }: { id: number; onClose: ()
 
     if (loading || !property) return null;
 
-    const whatsappMessage = `Hola! Me interesa la propiedad: ${property.title} (${property.location}). ID: ${property.id}`;
-    const whatsappUrl = `https://wa.me/1234567890?text=${encodeURIComponent(whatsappMessage)}`;
+    const whatsappMessage = `¡Hola! 👋 Me interesa esta propiedad:
 
-    const handleInquiry = async () => {
-        try {
-            await fetch('/api/inquiries', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    property_id: property.id,
-                    client_name: 'Interesado Web', // Placeholder since we don't have user auth
-                    client_phone: 'Consultado vía WhatsApp',
-                    message: `Interés en: ${property.title}`
-                })
-            });
-            // We still open WhatsApp
-            window.open(whatsappUrl, '_blank');
-        } catch (error) {
-            console.error('Error sending inquiry:', error);
-            window.open(whatsappUrl, '_blank');
-        }
+*${property.title.toUpperCase()}*
+📍 Ubicación: ${property.location}
+💰 Precio: $${property.price.toLocaleString()}
+🏠 Tipo: ${property.type.toUpperCase()}
+🆔 Ref: #${property.id}
+
+¿Me podrían brindar más información?`;
+
+    const whatsappUrl = `https://wa.me/5491172023171?text=${encodeURIComponent(whatsappMessage)}`;
+
+    const handleInquiry = () => {
+        // Enviar consulta al panel de control de forma asíncrona (sin bloquear)
+        fetch('/api/inquiries', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                property_id: property.id,
+                client_name: 'Interesado Web',
+                client_phone: 'Consultado vía WhatsApp',
+                message: `Interés en: ${property.title}`
+            })
+        }).catch(() => { });
     };
 
     const allImages = [property.main_image, ...(property.images?.map(img => img.url) || [])];
@@ -163,13 +166,16 @@ export function PropertyDetailOverlay({ id, onClose }: { id: number; onClose: ()
                         <p className="text-[10px] font-bold uppercase text-slate-400">Precio Total</p>
                         <p className="text-xl md:text-2xl font-bold">${property.price.toLocaleString()}</p>
                     </div>
-                    <button
+                    <a
+                        href={whatsappUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         onClick={handleInquiry}
                         className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-bold flex items-center justify-center gap-3 transition-all active:scale-[0.98] shadow-lg shadow-blue-600/20 text-sm md:text-base"
                     >
                         <MessageSquare className="size-5" />
                         Consultar por WhatsApp
-                    </button>
+                    </a>
                 </div>
             </div>
         </motion.div>
