@@ -80,12 +80,13 @@ export function Home() {
     return (
         <div className="min-h-screen">
             {/* Hero Section */}
-            <section className="relative h-screen w-full overflow-hidden flex items-center justify-center">
+            <section className="relative h-[100dvh] w-full overflow-hidden flex items-center justify-center select-none" style={{ touchAction: 'pan-y' }}>
                 <motion.div
                     initial={{ scale: 1.2 }}
                     animate={{ scale: 1 }}
                     transition={{ duration: 10, ease: "easeOut" }}
-                    className="absolute inset-0 z-0"
+                    className="absolute inset-0 z-0 transform-gpu"
+                    style={{ willChange: 'transform' }}
                 >
                     <img
                         src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1920&q=80"
