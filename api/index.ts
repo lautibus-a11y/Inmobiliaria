@@ -54,7 +54,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Route: GET /properties
     if (url === '/properties' && method === 'GET') {
         let supabaseQuery = supabase.from('properties').select('*, property_images(*)');
-        const { type, operation, minPrice, maxPrice } = queryParams;
+        const { type, operation, minPrice, maxPrice, search } = queryParams;
 
         if (type && type !== 'todos') {
             supabaseQuery = supabaseQuery.ilike('type', type);
@@ -64,6 +64,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         if (minPrice) supabaseQuery = supabaseQuery.gte('price', Number(minPrice));
         if (maxPrice) supabaseQuery = supabaseQuery.lte('price', Number(maxPrice));
+        if (search) {
+            supabaseQuery = supabaseQuery.or(`title.ilike.%${search}%,location.ilike.%${search}%`);
+        }
 
         supabaseQuery = supabaseQuery.order('featured', { ascending: false }).order('created_at', { ascending: false });
 

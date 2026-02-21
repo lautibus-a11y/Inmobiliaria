@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Property } from "../types";
 import { PropertyCard } from "../components/PropertyCard";
-import { Search, SlidersHorizontal, Home as HomeIcon, Building2, LandPlot, Store, Palmtree, ChevronDown } from "lucide-react";
+import { Search, SlidersHorizontal, Home as HomeIcon, Building2, LandPlot, Store, Palmtree, ChevronDown, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 
 export function Home() {
@@ -11,6 +11,7 @@ export function Home() {
     const [loading, setLoading] = useState(true);
     const [activeType, setActiveType] = useState<string>('todos');
     const [operation, setOperation] = useState<'venta' | 'alquiler'>('venta');
+    const [searchQuery, setSearchQuery] = useState('');
     const [favorites, setFavorites] = useState<number[]>([]);
     const [heroHeight, setHeroHeight] = useState<string>('100vh');
     const catalogRef = useRef<HTMLDivElement>(null);
@@ -26,15 +27,19 @@ export function Home() {
     }, []);
 
     useEffect(() => {
-        fetchProperties();
+        const timer = setTimeout(() => {
+            fetchProperties();
+        }, 300); // Small debounce for search
         fetchFavorites();
-    }, [activeType, operation]);
+        return () => clearTimeout(timer);
+    }, [activeType, operation, searchQuery]);
 
     const fetchProperties = async () => {
         setLoading(true);
         try {
             const typeParam = activeType !== 'todos' ? `&type=${activeType}` : '';
-            const response = await fetch(`/api/properties?operation=${operation}${typeParam}`);
+            const searchParam = searchQuery ? `&search=${encodeURIComponent(searchQuery)}` : '';
+            const response = await fetch(`/api/properties?operation=${operation}${typeParam}${searchParam}`);
             if (!response.ok) {
                 console.error("API error:", response.status, response.statusText);
                 setProperties([]);
@@ -154,9 +159,19 @@ export function Home() {
                             <Search className="size-5 text-slate-400 mr-2" />
                             <input
                                 type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
                                 className="bg-transparent border-none p-0 focus:ring-0 text-sm w-full placeholder:text-slate-400"
                                 placeholder="Busca tu proximo hogar..."
                             />
+                            {searchQuery && (
+                                <button
+                                    onClick={() => setSearchQuery('')}
+                                    className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-full transition-colors"
+                                >
+                                    <X className="size-4 text-slate-400" />
+                                </button>
+                            )}
                         </div>
                         <button className="flex items-center justify-center size-11 rounded-full border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 transition-colors">
                             <SlidersHorizontal className="size-5" />

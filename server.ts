@@ -34,11 +34,14 @@ async function startServer() {
   // ─── Properties ────────────────────────────────────────────────────────────
   app.get("/api/properties", async (req: Request, res: Response) => {
     let query = supabase.from('properties').select('*, property_images(*)');
-    const { type, operation, minPrice, maxPrice } = req.query;
+    const { type, operation, minPrice, maxPrice, search } = req.query;
     if (type) query = query.eq('type', type as string);
     if (operation) query = query.eq('operation', operation as string);
     if (minPrice) query = query.gte('price', Number(minPrice));
     if (maxPrice) query = query.lte('price', Number(maxPrice));
+    if (search) {
+      query = query.or(`title.ilike.%${search}%,location.ilike.%${search}%`);
+    }
     query = query.order('featured', { ascending: false }).order('created_at', { ascending: false });
     const { data, error } = await query;
     if (error) return res.status(500).json({ error: error.message });
