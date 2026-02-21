@@ -12,11 +12,18 @@ export function Home() {
     const [activeType, setActiveType] = useState<string>('todos');
     const [operation, setOperation] = useState<'venta' | 'alquiler'>('venta');
     const [favorites, setFavorites] = useState<number[]>([]);
+    const [heroHeight, setHeroHeight] = useState<string>('100vh');
     const catalogRef = useRef<HTMLDivElement>(null);
 
     const scrollToCatalog = () => {
         catalogRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
+
+    useEffect(() => {
+        // Fix for mobile browser address bar resizing - set height once at mount
+        const height = window.innerHeight;
+        setHeroHeight(`${height}px`);
+    }, []);
 
     useEffect(() => {
         fetchProperties();
@@ -80,7 +87,10 @@ export function Home() {
     return (
         <div className="min-h-screen">
             {/* Hero Section */}
-            <section className="relative h-[100dvh] w-full overflow-hidden flex items-center justify-center select-none" style={{ touchAction: 'pan-y' }}>
+            <section
+                className="relative w-full overflow-hidden flex items-center justify-center select-none"
+                style={{ height: heroHeight, touchAction: 'pan-y' }}
+            >
                 <motion.div
                     initial={{ scale: 1.2 }}
                     animate={{ scale: 1 }}
