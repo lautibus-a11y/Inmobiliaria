@@ -53,7 +53,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Route: GET /properties
     if (url === '/properties' && method === 'GET') {
-        let supabaseQuery = supabase.from('properties').select('*');
+        let supabaseQuery = supabase.from('properties').select('*, property_images(*)');
         const { type, operation, minPrice, maxPrice } = queryParams;
 
         if (type && type !== 'todos') {
@@ -69,7 +69,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
         const { data, error } = await supabaseQuery;
         if (error) return res.status(500).json({ error: error.message });
-        return res.status(200).json(data);
+        return res.status(200).json(data.map((p: any) => ({ ...p, images: p.property_images })));
     }
 
     // Route: POST /properties
@@ -82,7 +82,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             .single();
         if (error) return res.status(500).json({ error: error.message });
         if (images && Array.isArray(images)) {
-            const imageData = images.map((url: string) => ({ property_id: property.id, url }));
+            const imageData = images.map((img: any) => ({ property_id: property.id, url: img.url }));
             await supabase.from('property_images').insert(imageData);
         }
         return res.status(200).json({ id: property.id });
@@ -113,7 +113,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         if (error) return res.status(500).json({ error: error.message });
         await supabase.from('property_images').delete().eq('property_id', id);
         if (images && Array.isArray(images)) {
-            const imageData = images.map((url: string) => ({ property_id: parseInt(id), url }));
+            const imageData = images.map((img: any) => ({ property_id: parseInt(id), url: img.url }));
             await supabase.from('property_images').insert(imageData);
         }
         return res.status(200).json({ success: true });

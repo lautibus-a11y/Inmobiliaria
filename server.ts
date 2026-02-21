@@ -33,7 +33,7 @@ async function startServer() {
 
   // ─── Properties ────────────────────────────────────────────────────────────
   app.get("/api/properties", async (req: Request, res: Response) => {
-    let query = supabase.from('properties').select('*');
+    let query = supabase.from('properties').select('*, property_images(*)');
     const { type, operation, minPrice, maxPrice } = req.query;
     if (type) query = query.eq('type', type as string);
     if (operation) query = query.eq('operation', operation as string);
@@ -42,7 +42,7 @@ async function startServer() {
     query = query.order('featured', { ascending: false }).order('created_at', { ascending: false });
     const { data, error } = await query;
     if (error) return res.status(500).json({ error: error.message });
-    res.json(data);
+    res.json(data.map((p: any) => ({ ...p, images: p.property_images })));
   });
 
   app.get("/api/properties/:id", async (req: Request, res: Response) => {
@@ -61,7 +61,7 @@ async function startServer() {
       .select().single();
     if (error) return res.status(500).json({ error: error.message });
     if (images && Array.isArray(images)) {
-      await supabase.from('property_images').insert(images.map((url: string) => ({ property_id: data.id, url })));
+      await supabase.from('property_images').insert(images.map((img: any) => ({ property_id: data.id, url: img.url })));
     }
     res.json({ id: data.id });
   });
@@ -75,7 +75,7 @@ async function startServer() {
     if (error) return res.status(500).json({ error: error.message });
     await supabase.from('property_images').delete().eq('property_id', id);
     if (images && Array.isArray(images)) {
-      await supabase.from('property_images').insert(images.map((url: string) => ({ property_id: parseInt(id), url })));
+      await supabase.from('property_images').insert(images.map((img: any) => ({ property_id: parseInt(id), url: img.url })));
     }
     res.json({ success: true });
   });

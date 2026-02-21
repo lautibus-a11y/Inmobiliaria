@@ -409,10 +409,13 @@ export function AdminDashboardOverlay({ onClose }: { onClose: () => void }) {
                                                             files.forEach((file: File) => {
                                                                 const reader = new FileReader();
                                                                 reader.onloadend = () => {
-                                                                    const currentImages = editingProperty.images || [];
-                                                                    setEditingProperty({
-                                                                        ...editingProperty,
-                                                                        images: [...currentImages, { url: reader.result as string } as any]
+                                                                    setEditingProperty(prev => {
+                                                                        if (!prev) return null;
+                                                                        const currentImages = prev.images || [];
+                                                                        return {
+                                                                            ...prev,
+                                                                            images: [...currentImages, { url: reader.result as string } as any]
+                                                                        };
                                                                     });
                                                                 };
                                                                 reader.readAsDataURL(file);
